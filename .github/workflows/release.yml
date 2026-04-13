@@ -21,12 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Build application
-        run: npm run build
-      
-      - name: Build distributable
-        run: npm run dist
-      
       - name: Get version from tag
         id: version
         run: |
@@ -34,6 +28,15 @@ jobs:
           $version = $tag.TrimStart("v")
           echo "tag=$tag" >> $env:GITHUB_OUTPUT
           echo "version=$version" >> $env:GITHUB_OUTPUT
+      
+      - name: Update package.json version
+        run: npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Build distributable
+        run: npm run dist
       
       - name: Find .exe file
         id: exe
