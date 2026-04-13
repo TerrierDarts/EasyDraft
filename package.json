@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Draft Management System for OBS overlays with Electron",
+  "author": "EasyDraft",
   "main": "dist/main/index.js",
   "homepage": "./",
   "scripts": {
@@ -48,6 +49,23 @@
     ],
     "directories": {
       "buildResources": "public"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "EasyDraft"
     }
   }
 }
