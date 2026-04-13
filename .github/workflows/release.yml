@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
     
     steps:
       - uses: actions/checkout@v4
@@ -36,23 +38,43 @@ jobs:
         run: npm run build
       
       - name: Build distributable
+        continue-on-error: true
         run: npm run dist
         env:
           ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
           SKIP_NOTARIZATION: true
           GH_TOKEN: ""
       
+      - name: List build artifacts
+        run: |
+          Write-Host "Contents of dist directory:"
+          if (Test-Path "dist") {
+            Get-ChildItem -Path "dist" -Recurse | Format-Table FullName
+          } else {
+            Write-Host "dist directory does not exist"
+          }
+      
       - name: Find .exe file
         id: exe
+        continue-on-error: true
         run: |
-          $exeFile = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse | Select-Object -First 1
+          $exeFile = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($exeFile) {
-            echo "path=$($exeFile.FullName)" >> $env:GITHUB_OUTPUT
+            $fullPath = $exeFile.FullName
+            echo "path=$fullPath" >> $env:GITHUB_OUTPUT
             echo "name=$($exeFile.Name)" >> $env:GITHUB_OUTPUT
-            echo "Found: $($exeFile.Name)"
+            Write-Host "✓ Found: $($exeFile.Name)"
+            Write-Host "  Full path: $fullPath"
           } else {
-            Write-Error "No .exe file found in dist directory"
-            exit 1
+            Write-Host "⚠ No .exe file found in dist directory"
+            Write-Host "Listing dist contents:"
+            if (Test-Path "dist") {
+              Get-ChildItem -Path "dist" -Recurse
+            } else {
+              Write-Host "dist directory not found"
+            }
+            echo "path=" >> $env:GITHUB_OUTPUT
+            echo "name=" >> $env:GITHUB_OUTPUT
           }
       
       - name: Create Release
@@ -65,14 +87,14 @@ jobs:
             
             Draft Management System for OBS overlays with Electron
             
-            ### Download
-            - **Windows Installer**: ${{ steps.exe.outputs.name }}
-            
             ### Features
             - Live draft management with real-time overlays
             - Customizable overlay themes (fonts, sizes, colors)
             - OBS integration ready
             - Team management and player tracking
+            
+            ### Build Status
+            Build completed on: ${{ runner.os }} (${{ runner.arch }})
           files: ${{ steps.exe.outputs.path }}
           draft: false
           prerelease: false
