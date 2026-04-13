@@ -35,7 +35,6 @@ jobs:
         run: npm run build
       
       - name: Build distributable
-        continue-on-error: true
         run: npm run dist
         env:
           ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
@@ -46,32 +45,51 @@ jobs:
         run: |
           Write-Host "Contents of dist directory:"
           if (Test-Path "dist") {
-            Get-ChildItem -Path "dist" -Recurse | Format-Table FullName
+            Get-ChildItem -Path "dist" -Recurse | ForEach-Object {
+              Write-Host "  $($_.FullName)"
+            }
           } else {
             Write-Host "dist directory does not exist"
+          }
+          Write-Host ""
+          Write-Host "Current directory contents:"
+          Get-ChildItem | ForEach-Object {
+            Write-Host "  $($_.Name)"
           }
       
       - name: Find .exe file
         id: exe
-        continue-on-error: true
         run: |
-          $exeFile = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          # Look for the installer first (Setup .exe)
+          $installerExe = @(Get-ChildItem -Path "dist" -Filter "*Setup*.exe" -ErrorAction SilentlyContinue)
+          
+          if ($installerExe.Count -gt 0) {
+            $exeFile = $installerExe[0]
+            $fileType = "Installer"
+          } else {
+            # Fallback to application .exe in win-unpacked
+            $appExe = @(Get-ChildItem -Path "dist\win-unpacked" -Filter "*.exe" -ErrorAction SilentlyContinue)
+            if ($appExe.Count -gt 0) {
+              $exeFile = $appExe[0]
+              $fileType = "Application"
+            }
+          }
+          
           if ($exeFile) {
             $fullPath = $exeFile.FullName
             echo "path=$fullPath" >> $env:GITHUB_OUTPUT
             echo "name=$($exeFile.Name)" >> $env:GITHUB_OUTPUT
-            Write-Host "✓ Found: $($exeFile.Name)"
+            Write-Host "✓ Found $fileType .exe: $($exeFile.Name)"
             Write-Host "  Full path: $fullPath"
+            Write-Host "  Size: $(($exeFile.Length / 1MB).ToString('F2')) MB"
           } else {
-            Write-Host "⚠ No .exe file found in dist directory"
-            Write-Host "Listing dist contents:"
-            if (Test-Path "dist") {
-              Get-ChildItem -Path "dist" -Recurse
-            } else {
-              Write-Host "dist directory not found"
+            Write-Host "✗ ERROR: No .exe file found!"
+            Write-Host ""
+            Write-Host "Full dist directory listing:"
+            Get-ChildItem -Path "dist" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+              Write-Host "  $($_.FullName)"
             }
-            echo "path=" >> $env:GITHUB_OUTPUT
-            echo "name=" >> $env:GITHUB_OUTPUT
+            exit 1
           }
       
       - name: Create or Update Release
