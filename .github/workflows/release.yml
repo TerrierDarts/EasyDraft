@@ -37,6 +37,10 @@ jobs:
       
       - name: Build distributable
         run: npm run dist
+        env:
+          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
+          SKIP_NOTARIZATION: true
+          GH_TOKEN: ""
       
       - name: Find .exe file
         id: exe
