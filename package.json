@@ -50,6 +50,7 @@
     "directories": {
       "buildResources": "public"
     },
+    "publish": null,
     "win": {
       "target": [
         {
