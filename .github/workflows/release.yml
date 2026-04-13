@@ -1,0 +1,73 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Build distributable
+        run: npm run dist
+      
+      - name: Get version from tag
+        id: version
+        run: |
+          $tag = "${{ github.ref }}".Replace("refs/tags/", "")
+          $version = $tag.TrimStart("v")
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+      
+      - name: Find .exe file
+        id: exe
+        run: |
+          $exeFile = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse | Select-Object -First 1
+          if ($exeFile) {
+            echo "path=$($exeFile.FullName)" >> $env:GITHUB_OUTPUT
+            echo "name=$($exeFile.Name)" >> $env:GITHUB_OUTPUT
+            echo "Found: $($exeFile.Name)"
+          } else {
+            Write-Error "No .exe file found in dist directory"
+            exit 1
+          }
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: EasyDraft ${{ steps.version.outputs.version }}
+          body: |
+            ## EasyDraft ${{ steps.version.outputs.version }}
+            
+            Draft Management System for OBS overlays with Electron
+            
+            ### Download
+            - **Windows Installer**: ${{ steps.exe.outputs.name }}
+            
+            ### Features
+            - Live draft management with real-time overlays
+            - Customizable overlay themes (fonts, sizes, colors)
+            - OBS integration ready
+            - Team management and player tracking
+          files: ${{ steps.exe.outputs.path }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

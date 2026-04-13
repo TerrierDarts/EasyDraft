@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./dist",
+    "module": "commonjs",
+    "target": "ES2020",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  ,
+  "moduleResolution": "node",
+  "allowImportingTsExtensions": false
+  },
+  "include": ["src/main/**/*", "src/server/**/*", "src/shared/**/*"]
+}
