@@ -2,138 +2,95 @@ name: Build & Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*.*.*'   # triggers on tags like v1.0.0, v1.0.1
+
+permissions:
+  contents: write  # needed to create releases
 
 jobs:
   build:
     runs-on: windows-latest
-    permissions:
-      contents: write
-    
+
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      
-      - name: Get version from package.json
+
+      - name: Get version from tag
         id: version
+        shell: pwsh
         run: |
-          $packageJson = Get-Content -Path "package.json" -Raw | ConvertFrom-Json
-          $version = $packageJson.version
-          echo "version=$version" >> $env:GITHUB_OUTPUT
-          Write-Host "Version from package.json: $version"
-      
+          $tag = "${{ github.ref_name }}"           # e.g. v1.0.0
+          $ver = $tag.TrimStart('v')                # e.g. 1.0.0
+          echo "TAG=$tag" >> $env:GITHUB_OUTPUT
+          echo "VER=$ver" >> $env:GITHUB_OUTPUT
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build application
         run: npm run build
-      
-      - name: Build distributable
-        run: npm run dist
+
+      - name: Build standalone executable
+        shell: pwsh
+        run: |
+          npm run dist
         env:
           ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
           SKIP_NOTARIZATION: true
           GH_TOKEN: ""
-      
-      - name: List build artifacts
+
+      - name: Find and prepare executable
+        shell: pwsh
         run: |
-          Write-Host "Contents of dist directory:"
-          if (Test-Path "dist") {
-            Get-ChildItem -Path "dist" -Recurse | ForEach-Object {
-              Write-Host "  $($_.FullName)"
-            }
-          } else {
-            Write-Host "dist directory does not exist"
-          }
-          Write-Host ""
-          Write-Host "Current directory contents:"
-          Get-ChildItem | ForEach-Object {
-            Write-Host "  $($_.Name)"
-          }
-      
-      - name: Find .exe file
-        id: exe
-        run: |
-          # Look for the installer first (Setup .exe)
-          $installerExe = @(Get-ChildItem -Path "dist" -Filter "*Setup*.exe" -ErrorAction SilentlyContinue)
+          # Find the built executable in win-unpacked
+          $exePath = Get-ChildItem -Path "dist\win-unpacked" -Filter "EasyDraft.exe" | Select-Object -First 1
           
-          if ($installerExe.Count -gt 0) {
-            $exeFile = $installerExe[0]
-            $fileType = "Installer"
-          } else {
-            # Fallback to application .exe in win-unpacked
-            $appExe = @(Get-ChildItem -Path "dist\win-unpacked" -Filter "*.exe" -ErrorAction SilentlyContinue)
-            if ($appExe.Count -gt 0) {
-              $exeFile = $appExe[0]
-              $fileType = "Application"
-            }
-          }
-          
-          if ($exeFile) {
-            $fullPath = $exeFile.FullName
-            echo "path=$fullPath" >> $env:GITHUB_OUTPUT
-            echo "name=$($exeFile.Name)" >> $env:GITHUB_OUTPUT
-            Write-Host "✓ Found $fileType .exe: $($exeFile.Name)"
-            Write-Host "  Full path: $fullPath"
-            Write-Host "  Size: $(($exeFile.Length / 1MB).ToString('F2')) MB"
-          } else {
-            Write-Host "✗ ERROR: No .exe file found!"
-            Write-Host ""
-            Write-Host "Full dist directory listing:"
-            Get-ChildItem -Path "dist" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
-              Write-Host "  $($_.FullName)"
-            }
+          if (-not $exePath) {
+            Write-Error "EasyDraft.exe not found in dist\win-unpacked"
             exit 1
           }
-      
-      - name: Create or Update Release
-        run: |
-          $version = "${{ steps.version.outputs.version }}"
-          $tagName = "v$version"
-          $exePath = "${{ steps.exe.outputs.path }}"
           
-          Write-Host "Creating release: $tagName"
-          Write-Host "Exe path: $exePath"
-          Write-Host "Exe exists: $(Test-Path $exePath)"
+          Write-Host "Found executable: $($exePath.FullName)"
+          Write-Host "Size: $(($exePath.Length / 1MB).ToString('F2')) MB"
           
-          # Create the release with gh CLI
-          $body = @"
-          ## EasyDraft v$version
-          
-          Draft Management System for OBS overlays with Electron
-          
-          ### Features
-          - Live draft management with real-time overlays
-          - Customizable overlay themes (fonts, sizes, colors)
-          - OBS integration ready
-          - Team management and player tracking
-          
-          ### Build Status
-          Build completed on: ${{ runner.os }} (${{ runner.arch }})
-          "@
-          
-          # Try to create release, if it exists, delete and recreate
-          gh release delete $tagName --yes --repo ${{ github.repository }} 2>$null
-          
-          if (Test-Path $exePath) {
-            Write-Host "Uploading with .exe attachment..."
-            gh release create $tagName `
-              --title "EasyDraft v$version" `
-              --notes $body `
-              --repo ${{ github.repository }} `
-              "$exePath"
-          } else {
-            Write-Host "Creating release without .exe (not found)"
-            gh release create $tagName `
-              --title "EasyDraft v$version" `
-              --notes $body `
-              --repo ${{ github.repository }}
-          }
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Copy to root dist folder for easier access
+          Copy-Item $exePath.FullName "dist\EasyDraft.exe"
+          Write-Host "Copied to dist\EasyDraft.exe"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "EasyDraft v${{ steps.version.outputs.VER }}"
+          tag_name: ${{ github.ref_name }}
+          body: |
+            ## EasyDraft ${{ steps.version.outputs.TAG }}
+
+            Draft Management System for OBS overlays with Electron
+
+            **By [TerrierDarts](https://github.com/TerrierDarts)**
+
+            ### Installation
+            1. Download `EasyDraft.exe`
+            2. Run it - no installation needed!
+            3. Start managing your drafts with live OBS overlays
+
+            > **Requires Windows 10/11 — portable, no dependencies needed**
+
+            ### Features
+            - Live draft management with real-time overlays
+            - Customizable overlay themes (fonts, sizes, colors)
+            - OBS integration ready
+            - Team management and player tracking
+            - WebSocket-based overlay updates
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            dist/EasyDraft.exe
+
