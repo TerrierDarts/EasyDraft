@@ -48,7 +48,8 @@
       "public/**/*"
     ],
     "directories": {
-      "buildResources": "public"
+      "buildResources": "public",
+      "output": "dist"
     },
     "publish": null,
     "win": {

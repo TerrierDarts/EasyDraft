@@ -52,20 +52,43 @@ jobs:
       - name: Find and prepare executable
         shell: pwsh
         run: |
-          # Find the built executable in win-unpacked
-          $exePath = Get-ChildItem -Path "dist\win-unpacked" -Filter "EasyDraft.exe" | Select-Object -First 1
+          # Verify the built folder exists with all dependencies
+          $portableFolder = "dist\win-unpacked"
           
-          if (-not $exePath) {
-            Write-Error "EasyDraft.exe not found in dist\win-unpacked"
+          if (-not (Test-Path $portableFolder)) {
+            Write-Error "Portable folder not found at $portableFolder"
             exit 1
           }
           
-          Write-Host "Found executable: $($exePath.FullName)"
-          Write-Host "Size: $(($exePath.Length / 1MB).ToString('F2')) MB"
+          # Check that key files exist
+          $exePath = Join-Path $portableFolder "EasyDraft.exe"
+          if (-not (Test-Path $exePath)) {
+            Write-Error "EasyDraft.exe not found in portable folder"
+            exit 1
+          }
           
-          # Copy to root dist folder for easier access
-          Copy-Item $exePath.FullName "dist\EasyDraft.exe"
-          Write-Host "Copied to dist\EasyDraft.exe"
+          Write-Host "✓ Found portable folder: $portableFolder"
+          Write-Host "✓ EasyDraft.exe present"
+          
+          # Count files to verify dependencies are included
+          $fileCount = (Get-ChildItem -Path $portableFolder -Recurse -File).Count
+          Write-Host "✓ Total files in portable: $fileCount"
+          
+          # Get total size
+          $size = (Get-ChildItem -Path $portableFolder -Recurse | Measure-Object -Property Length -Sum).Sum
+          Write-Host "✓ Total size: $(($size / 1MB).ToString('F2')) MB"
+
+      - name: Create portable zip
+        shell: pwsh
+        run: |
+          $ver = "${{ steps.version.outputs.VER }}"
+          $zipPath = "EasyDraft-v$ver-portable.zip"
+          
+          # Create zip of the entire portable folder
+          Compress-Archive -Path "dist\win-unpacked\*" -DestinationPath $zipPath -Force
+          
+          Write-Host "✓ Created: $zipPath"
+          Write-Host "  Size: $(((Get-Item $zipPath).Length / 1MB).ToString('F2')) MB"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -80,11 +103,12 @@ jobs:
             **By [TerrierDarts](https://github.com/TerrierDarts)**
 
             ### Installation
-            1. Download `EasyDraft.exe`
-            2. Run it - no installation needed!
-            3. Start managing your drafts with live OBS overlays
+            1. Download `EasyDraft-v${{ steps.version.outputs.VER }}-portable.zip`
+            2. Extract anywhere
+            3. Run `EasyDraft.exe` - no installation needed!
+            4. Start managing your drafts with live OBS overlays
 
-            > **Requires Windows 10/11 — portable, no dependencies needed**
+            > **Requires Windows 10/11 — fully portable, all dependencies included**
 
             ### Features
             - Live draft management with real-time overlays
@@ -95,5 +119,5 @@ jobs:
           draft: false
           prerelease: ${{ contains(steps.version.outputs.TAG, '-') }}
           files: |
-            dist/EasyDraft.exe
+            EasyDraft-v${{ steps.version.outputs.VER }}-portable.zip
 
