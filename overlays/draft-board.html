@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EasyDraft - Draft Board</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;700&family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --font: 'Inter', sans-serif;
+      --header-font: 'Rajdhani', monospace;
+      --header-size: 36px;
+      --title-size: 24px;
+      --body-size: 16px;
+      --tag-size: 12px;
+      --bg-color: #0f172a;
+      --bg-gradient-end: #1e293b;
+      --panel-bg: rgba(30, 41, 59, 0.8);
+      --text-color: #e2e8f0;
+      --header-color: #60a5fa;
+      --accent-color: #3b82f6;
+      --tag-bg: rgba(59, 130, 246, 0.2);
+      --tag-text: #93c5fd;
+      --border-color: #334155;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--bg-color) 0%, var(--bg-gradient-end) 100%);
+      color: var(--text-color);
+      font-family: var(--font);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-family: var(--header-font);
+      font-size: var(--header-size);
+      color: var(--header-color);
+      margin-bottom: 20px;
+      text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .placeholder {
+      color: #64748b;
+      font-style: italic;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid var(--border-color);
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .stat-label {
+      color: #94a3b8;
+      font-size: 12px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--header-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Draft Board</h1>
+    
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-label">Total</div>
+        <div class="stat-value">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Remaining</div>
+        <div class="stat-value">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Drafted</div>
+        <div class="stat-value">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Pick #</div>
+        <div class="stat-value">0</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="placeholder">
+        Connect to EasyDraft app to see draft board.<br>
+        <small>Players and their tags will display here.</small>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('Draft Board Overlay loaded. Waiting for connection...');
+  </script>
+</body>
+</html>

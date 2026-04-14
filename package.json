@@ -8,10 +8,11 @@
   "homepage": "./",
   "scripts": {
   "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && tsc -p tsconfig.main.json && electron .\"",
-  "build": "tsc -p tsconfig.main.json && vite build",
+  "generate-overlays": "node --loader tsx scripts/generate-overlays.ts",
+  "build": "npm run generate-overlays && tsc -p tsconfig.main.json && vite build",
   "start": "npm run build && electron .",
   "pack": "electron-builder --dir",
-  "dist": "electron-builder --publish never"
+  "dist": "npm run generate-overlays && electron-builder --publish never"
   },
   "dependencies": {
     "electron-is-dev": "^2.0.0",
@@ -44,6 +45,7 @@
     "productName": "EasyDraft",
     "files": [
       "dist/**/*",
+      "overlays/**/*",
       "node_modules/**/*",
       "public/**/*"
     ],
