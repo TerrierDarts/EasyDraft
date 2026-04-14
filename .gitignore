@@ -27,6 +27,9 @@ Thumbs.db
 data/*.json
 !data/example-draft.json
 
+# Overlays (generated at runtime)
+overlays/
+
 # Electron
 release/
 

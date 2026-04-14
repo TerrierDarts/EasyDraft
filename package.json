@@ -44,7 +44,6 @@
     "productName": "EasyDraft",
     "files": [
       "dist/**/*",
-      "overlays/**/*",
       "node_modules/**/*",
       "public/**/*"
     ],
