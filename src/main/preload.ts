@@ -12,5 +12,6 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.on('draft-update', (_event, data) => callback(data));
   },
   openUrl: (url: string) => ipcRenderer.invoke('open-url', url),
+  openFolder: (folderPath: string) => ipcRenderer.invoke('open-folder', folderPath),
   syncDraftState: (draft: any) => ipcRenderer.invoke('sync-draft-state', draft),
 });

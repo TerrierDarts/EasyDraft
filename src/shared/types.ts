@@ -24,6 +24,9 @@ export interface OverlayTheme {
   tagTextColor: string;
   borderColor: string;
 
+  // Settings
+  showTimer: boolean;
+
   // Theme preset name
   preset: string;
 }
@@ -46,6 +49,7 @@ export const DEFAULT_OVERLAY_THEME: OverlayTheme = {
   tagBackground: 'rgba(96, 165, 250, 0.2)',
   tagTextColor: '#93c5fd',
   borderColor: 'rgba(255, 255, 255, 0.15)',
+  showTimer: true,
   preset: 'default',
 };
 

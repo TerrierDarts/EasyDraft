@@ -24,7 +24,7 @@ export default function OverlaySettings() {
   const draft = useDraftStore((state) => state.draft);
   const setOverlayTheme = useDraftStore((state) => state.setOverlayTheme);
   const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'presets' | 'fonts' | 'sizes' | 'colors'>('presets');
+  const [activeTab, setActiveTab] = useState<'presets' | 'fonts' | 'sizes' | 'colors' | 'settings'>('presets');
 
   if (!draft) return null;
 
@@ -100,7 +100,7 @@ export default function OverlaySettings() {
 
               {/* Tab navigation */}
               <div className="flex gap-1 mb-4 bg-gray-800 rounded-lg p-1">
-                {(['presets', 'fonts', 'sizes', 'colors'] as const).map((tab) => (
+                {(['presets', 'fonts', 'sizes', 'colors', 'settings'] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -110,7 +110,7 @@ export default function OverlaySettings() {
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
-                    {tab === 'presets' ? '🎭 Presets' : tab === 'fonts' ? '🔤 Fonts' : tab === 'sizes' ? '📐 Sizes' : '🎨 Colors'}
+                    {tab === 'presets' ? '🎭 Presets' : tab === 'fonts' ? '🔤 Fonts' : tab === 'sizes' ? '📐 Sizes' : tab === 'colors' ? '🎨 Colors' : '⚙️ Settings'}
                   </button>
                 ))}
               </div>
@@ -242,6 +242,39 @@ export default function OverlaySettings() {
                           female
                         </span>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Settings Tab */}
+                {activeTab === 'settings' && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-gray-400 mb-3">Configure overlay display settings.</p>
+                    
+                    {/* Timer Toggle */}
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-gray-800">
+                      <div>
+                        <label className="text-sm font-medium text-gray-300">Show Timer</label>
+                        <p className="text-xs text-gray-500 mt-1">Display the countdown timer on Current Pick overlay</p>
+                      </div>
+                      <button
+                        onClick={() => updateTheme({ showTimer: !theme.showTimer })}
+                        className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                          theme.showTimer ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                            theme.showTimer ? 'translate-x-7' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="mt-4 p-3 rounded bg-blue-900/20 border border-blue-700/30">
+                      <p className="text-xs text-blue-300">
+                        <strong>💡 Tip:</strong> Disable the timer if you want to manage time separately or hide it from your broadcast.
+                      </p>
                     </div>
                   </div>
                 )}

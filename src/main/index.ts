@@ -161,6 +161,17 @@ ipcMain.handle('open-url', async (_event, url: string) => {
   }
 });
 
+// IPC handler: open folder in file explorer
+ipcMain.handle('open-folder', async (_event, folderPath: string) => {
+  void _event;
+  try {
+    await shell.openPath(folderPath);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
 // IPC handler: sync draft state to overlay server
 ipcMain.handle('sync-draft-state', async (_event, draftData) => {
   void _event;

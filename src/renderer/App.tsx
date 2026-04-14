@@ -227,6 +227,38 @@ export default function App() {
         <div className="p-4 border-t border-gray-800 text-xs text-gray-500">
           <p>🔗 Server: localhost:3001</p>
           <p className="mt-1">✅ Ready for OBS</p>
+          
+          {/* Support Links */}
+          <div className="mt-3 pt-3 border-t border-gray-700 space-y-2">
+            <p className="text-xs font-semibold text-gray-400 mb-2">💜 Support</p>
+            <a
+              href="https://x.com/TerrierDarts"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center gap-2 px-2 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-xs text-gray-300 transition-colors"
+              title="Follow on X/Twitter"
+            >
+              𝕏 Twitter
+            </a>
+            <a
+              href="https://www.twitch.tv/codewithTD"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center gap-2 px-2 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-xs text-gray-300 transition-colors"
+              title="Follow on Twitch"
+            >
+              📺 Twitch
+            </a>
+            <a
+              href="https://www.paypal.com/paypalme/terrierdarts"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center gap-2 px-2 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-xs text-gray-300 transition-colors"
+              title="Support via PayPal"
+            >
+              💳 PayPal
+            </a>
+          </div>
         </div>
       </div>
 
@@ -250,6 +282,7 @@ declare global {
       exportDraft: (draftId: string, format: string) => Promise<any>;
       importDraft: (filePath: string) => Promise<any>;
       openUrl: (url: string) => Promise<any>;
+      openFolder: (folderPath: string) => Promise<any>;
       syncDraftState: (draft: DraftState) => Promise<any>;
     };
   }

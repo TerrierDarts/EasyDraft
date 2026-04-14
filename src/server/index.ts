@@ -206,6 +206,9 @@ function generateCurrentPickOverlay(): string {
       font-size: var(--timer-size); font-weight: bold; color: var(--timer-color);
       margin: 30px 0; font-variant-numeric: tabular-nums; font-family: 'Courier New', monospace;
     }
+    .timer.hidden {
+      display: none;
+    }
     .pick-number { font-size: var(--body-size); color: var(--accent); margin: 15px 0; }
     .section-divider { margin-top: 30px; padding-top: 30px; border-top: 2px solid var(--border); text-align: left; }
     .section-header {
@@ -310,6 +313,15 @@ function generateCurrentPickOverlay(): string {
       }
       document.getElementById('team-name').textContent = team ? team.name : 'Waiting...';
       document.getElementById('pick-number').textContent = \`Pick \${draftState.picks.length + 1}\`;
+      
+      // Show/hide timer based on settings
+      const timerEl = document.getElementById('timer');
+      if (draftState.overlayTheme && draftState.overlayTheme.showTimer === false) {
+        timerEl.classList.add('hidden');
+      } else {
+        timerEl.classList.remove('hidden');
+      }
+      
       updateConstraints(team);
       updateRoster(team);
       updateTimer();
