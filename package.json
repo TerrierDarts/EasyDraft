@@ -1,7 +1,6 @@
 {
   "name": "easydraft",
   "version": "1.0.5",
-  "type": "module",
   "description": "Draft Management System for OBS overlays with Electron",
   "author": "EasyDraft",
   "main": "dist/main/index.js",
